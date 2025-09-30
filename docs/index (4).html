@@ -1,0 +1,101 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historia del FC Barcelona</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        header {
+            background-color: #a50044;
+            color: white;
+            text-align: center;
+            padding: 2em;
+        }
+        section {
+            max-width: 800px;
+            margin: 2em auto;
+            padding: 1em;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1em auto;
+        }
+        h2 {
+            color: #004d98;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Historia del FC Barcelona</h1>
+    </header>
+
+    <section id="fundacion">
+        <h2>Fundación y Primeros Años</h2>
+        <p>El FC Barcelona fue fundado el 29 de noviembre de 1899 por un grupo de futbolistas liderados por Joan Gamper. Desde sus inicios, el club se convirtió en un símbolo de la identidad catalana, adoptando los colores azul y grana.</p>
+        <img src="images/historia1.jpg" alt="Fundación del FC Barcelona">
+    </section>
+
+    <section id="era-dorada">
+        <h2>La Era Dorada</h2>
+        <p>Durante los años 2000, bajo la dirección de entrenadores como Pep Guardiola, el FC Barcelona vivió una de sus etapas más exitosas, ganando múltiples títulos de La Liga, Champions League y otros trofeos, con un estilo de juego basado en el "tiki-taka".</p>
+        <img src="images/historia2.jpg" alt="Era dorada del FC Barcelona">
+    </section>
+
+    <section id="impacto-cultural">
+        <h2>Impacto Cultural</h2>
+        <p>Más allá del fútbol, el FC Barcelona es un emblema de la cultura catalana. Su lema "Més que un club" refleja su compromiso con valores sociales y culturales, siendo un punto de unión para millones de aficionados en todo el mundo.</p>
+        <img src="images/historia3.jpg" alt="Impacto cultural del FC Barcelona">
+    </section>
+</body>
+</html>
